@@ -98,39 +98,50 @@ function requireAuthenticatedOrFail(state) {
 }
 
 //
-const server = net.createServer((socket) => {
-  const remote = `${socket.remoteAddress}:${socket.remotePort}`;
+// const server = net.createServer((socket) => {
+//   const remote = `${socket.remoteAddress}:${socket.remotePort}`;
 
-  // Limit aktiv
-  if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
-    try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
-    try { socket.end(); } catch {}
-    console.log(`[${nowISO()}] Refused connection from ${remote} (server busy).`);
-    return;
-  }
+//   // Limit aktiv
+//   if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
+//     try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
+//     try { socket.end(); } catch {}
+//     console.log(`[${nowISO()}] Refused connection from ${remote} (server busy).`);
+//     return;
+//   }
 
-  // State inicial për klientin
-  const state = {
-    socket,
-    remote,
-    ip: socket.remoteAddress,
-    port: socket.remotePort,
-    username: null,
-    authenticated: false,
-    role: null,
-    bytesReceived: 0,
-    bytesSent: 0,
-    messagesReceived: 0,
-    lastActive: Date.now(),
-    inactivityTimer: null,
-    // upload state
-    expectingUpload: false,
-    uploadBuffer: '',
-    uploadFilename: null
-  };
-  clients.set(socket, state);
+//   // State inicial për klientin
+//   const state = {
+//     socket,
+//     remote,
+//     ip: socket.remoteAddress,
+//     port: socket.remotePort,
+//     username: null,
+//     authenticated: false,
+//     role: null,
+//     bytesReceived: 0,
+//     bytesSent: 0,
+//     messagesReceived: 0,
+//     lastActive: Date.now(),
+//     inactivityTimer: null,
+//     // upload state
+//     expectingUpload: false,
+//     uploadBuffer: '',
+//     uploadFilename: null
+//   };
+//   clients.set(socket, state);
 
-  console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
+//   console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
 
-  socket.setEncoding('utf8');
+//   socket.setEncoding('utf8');
+//     function resetInactivity() {
+//     state.lastActive = Date.now();
+//     if (state.inactivityTimer) clearTimeout(state.inactivityTimer);
+//     state.inactivityTimer = setTimeout(() => {
+//       try { socket.write('NOTICE:INACTIVITY_CLOSING No activity detected. Connection closing.\n'); } catch {}
+//       console.log(`[${nowISO()}] Closing for inactivity: ${remote} (user=${state.username})`);
+//       cleanupSocket();
+//       try { socket.destroy(); } catch {}
+//     }, INACTIVITY_MS);
+//   }
+//   resetInactivity();
 
