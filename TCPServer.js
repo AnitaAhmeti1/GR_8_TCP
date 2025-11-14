@@ -96,3 +96,41 @@ function requireAuthenticatedOrFail(state) {
   }
   return true;
 }
+
+//
+const server = net.createServer((socket) => {
+  const remote = `${socket.remoteAddress}:${socket.remotePort}`;
+
+  // Limit aktiv
+  if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
+    try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
+    try { socket.end(); } catch {}
+    console.log(`[${nowISO()}] Refused connection from ${remote} (server busy).`);
+    return;
+  }
+
+  // State inicial për klientin
+  const state = {
+    socket,
+    remote,
+    ip: socket.remoteAddress,
+    port: socket.remotePort,
+    username: null,
+    authenticated: false,
+    role: null,
+    bytesReceived: 0,
+    bytesSent: 0,
+    messagesReceived: 0,
+    lastActive: Date.now(),
+    inactivityTimer: null,
+    // upload state
+    expectingUpload: false,
+    uploadBuffer: '',
+    uploadFilename: null
+  };
+  clients.set(socket, state);
+
+  console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
+
+  socket.setEncoding('utf8');
+
