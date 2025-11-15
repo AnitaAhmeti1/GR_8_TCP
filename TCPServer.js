@@ -239,5 +239,40 @@ if (!requireAuthenticatedOrFail(state)) return;
 //     }, INACTIVITY_MS);
 //   }
 //   resetInactivity();
+// socket.on('data', (data) => {
+//     resetInactivity();
 
->>>>>>> 35cf110c8eb6d1dcb757bfe6f2fb31479d1c58a1
+//     const len = Buffer.byteLength(data, 'utf8');
+//     state.bytesReceived += len;
+//     totalBytesReceived += len;
+//     state.messagesReceived += 1;
+//     state.lastActive = Date.now();
+  
+    // if (state.expectingUpload) {
+    //   state.uploadBuffer += data;
+    //   const beginIdx = state.uploadBuffer.indexOf('CONTENT_BEGIN');
+    //   const endIdx = state.uploadBuffer.indexOf('CONTENT_END');
+    //   if (beginIdx >= 0 && endIdx > beginIdx) {
+    //     const between = state.uploadBuffer.substring(beginIdx + 'CONTENT_BEGIN'.length, endIdx).trim();
+    //     try {
+    //       const safePath = safeJoin(FILES_DIR, state.uploadFilename);
+    //       fs.writeFileSync(safePath, between, 'utf8');
+    //       sendLine(socket, `UPLOAD_OK ${state.uploadFilename}`);
+    //       console.log(`[${nowISO()}] Uploaded ${state.uploadFilename} from ${state.username || state.remote}`);
+    //     } catch (e) {
+    //       sendLine(socket, `ERROR Upload failed: ${e.message}`);
+    //     }
+    //     // cleanup upload state
+    //     state.expectingUpload = false;
+    //     state.uploadBuffer = '';
+    //     state.uploadFilename = null;
+    //   }
+    //   return; 
+    // }
+
+    
+    // const lines = data.split(/\r?\n/).filter(Boolean);
+    // for (const raw of lines) {
+    //   const line = raw.trim();
+
+
