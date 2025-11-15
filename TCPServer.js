@@ -222,5 +222,13 @@ if (!requireAuthenticatedOrFail(state)) return;
 //     }, INACTIVITY_MS);
 //   }
 //   resetInactivity();
+// socket.on('data', (data) => {
+//     resetInactivity();
 
->>>>>>> 35cf110c8eb6d1dcb757bfe6f2fb31479d1c58a1
+//     const len = Buffer.byteLength(data, 'utf8');
+//     state.bytesReceived += len;
+//     totalBytesReceived += len;
+//     state.messagesReceived += 1;
+//     state.lastActive = Date.now();
+
+
