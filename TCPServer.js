@@ -362,6 +362,19 @@ if (line === 'STATS') {
   }
 });
 
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+rl.on('line', (line) => {
+  const t = line.trim().toUpperCase();
+  if (t === 'STATS') {
+    console.log(prettyStats());
+  } else if (t === 'EXIT' || t === 'QUIT') {
+    console.log('Shutting down server...');
+    process.exit(0);
+  } else {
+    console.log('Type STATS to see stats, or EXIT to stop the server.');
+  }
+});
+
 function showHelp() {
   console.log('\n' + '─'.repeat(60));
   console.log('KOMANDAT E DISPONUESHME:');
