@@ -48,9 +48,7 @@ socket.setEncoding('utf8');
 let downloadBuffer = '';
 let isDownloading = false;
 
-////////////////
 socket.on('data', (data) => {
-  // Handle download protocol
   if (data.includes('DOWNLOAD_BEGIN') || isDownloading) {
     downloadBuffer += data;
     isDownloading = true;
@@ -75,9 +73,10 @@ socket.on('data', (data) => {
       isDownloading = false;
       return;
     }
-    return; // Continue buffering
+    return;
   }
-if (data.includes('FILE_CONTENT_BEGIN') && data.includes('FILE_CONTENT_END')) {
+
+  if (data.includes('FILE_CONTENT_BEGIN') && data.includes('FILE_CONTENT_END')) {
     const beginIdx = data.indexOf('FILE_CONTENT_BEGIN');
     const endIdx = data.indexOf('FILE_CONTENT_END');
     const content = data.substring(beginIdx + 'FILE_CONTENT_BEGIN'.length, endIdx).trim();
@@ -92,7 +91,6 @@ if (data.includes('FILE_CONTENT_BEGIN') && data.includes('FILE_CONTENT_END')) {
     return;
   }
 
-  // Normal server messages
   process.stdout.write(`[SERVER] ${data}`);
 });
 
@@ -106,150 +104,67 @@ socket.on('error', (err) => {
   process.exit(1);
 });
 
-// Helper për upload interaktiv përmes string-ut
 function sendUploadContentFromString(content) {
   socket.write('CONTENT_BEGIN\n');
   socket.write(content + '\n');
   socket.write('CONTENT_END\n');
 }
-////////////////////
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+function showHelp() {
+  console.log('\n' + '─'.repeat(60));
+  console.log('KOMANDAT E DISPONUESHME:');
+  console.log('─'.repeat(60));
+  console.log('\n📂 FILE MANAGEMENT:');
+  console.log('  /list [dir]              - Lista e file-ave në server');
+  console.log('  /read <filename>         - Lexo përmbajtjen e file-it');
+  console.log('  /download <filename>     - Shkarko file (display content)');
+  console.log('  /search <keyword>        - Kërko file sipas emrit');
+  console.log('  /info <filename>         - Info për file-in');
+  console.log('\n🔐 ADMIN ONLY:');
+  console.log('  /upload <filename>       - Upload file (pastaj CONTENT_BEGIN...END)');
+  console.log('  /delete <filename>       - Fshi file nga serveri');
+  console.log('\n📊 OTHER:');
+  console.log('  STATS                    - Statistika të serverit');
+  console.log('  <text>                   - Dërgo mesazh të zakonshëm (echo)');
+  console.log('\n🛠️  LOCAL HELPER:');
+  console.log('  /local sendfile <path> [remotename]  - Upload automatik të file-it lokal');
+  console.log('\n💡 EXAMPLES:');
+  console.log('  /list');
+  console.log('  /read test.txt');
+  console.log('  /local sendfile ./document.txt mydoc.txt');
+  console.log('  /search report');
+  console.log('─'.repeat(60) + '\n');
+}
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: '> '
+});
+
+rl.prompt();
+
+rl.on('line', (line) => {
+  const trimmed = (line || '').trim();
+ 
+  if (!trimmed) {
+    rl.prompt();
+    return;
+  }
+
+  if (trimmed.toLowerCase() === 'help' || trimmed === '?') {
+    showHelp();
+    rl.prompt();
+    return;
+  }
+
+  if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
+    console.log('Goodbye!');
+    socket.end();
+    process.exit(0);
+  }
 
   if (trimmed.startsWith('/local sendfile ')) {
-
     const parts = trimmed.split(' ');
     const localPath = parts[2];
     const remoteName = parts[3] || (localPath ? path.basename(localPath) : null);
@@ -259,7 +174,7 @@ function sendUploadContentFromString(content) {
       rl.prompt();
       return;
     }
-
+   
     if (!fs.existsSync(localPath)) {
       console.log(`❌ Local file not found: ${localPath}`);
       rl.prompt();
@@ -271,15 +186,14 @@ function sendUploadContentFromString(content) {
       rl.prompt();
       return;
     }
-
-     try {
+   
+    try {
       const content = fs.readFileSync(localPath, 'utf8');
       const size = Buffer.byteLength(content, 'utf8');
       console.log(`📤 Uploading: ${localPath} → ${remoteName} (${size} bytes)`);
      
       socket.write(`/upload ${remoteName}\n`);
      
-
       setTimeout(() => {
         sendUploadContentFromString(content);
         console.log('✓ Upload sent');
@@ -292,6 +206,7 @@ function sendUploadContentFromString(content) {
     rl.prompt();
     return;
   }
+
   socket.write(trimmed + '\n');
   rl.prompt();
 });
