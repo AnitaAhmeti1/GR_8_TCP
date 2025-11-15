@@ -16,8 +16,37 @@ function parseArgs(argv) {
   return out;
 }
 
+////////////////
+socket.on('data', (data) => {
+  // Handle download protocol
+  if (data.includes('DOWNLOAD_BEGIN') || isDownloading) {
+    downloadBuffer += data;
+    isDownloading = true;
+   
+    if (downloadBuffer.includes('DOWNLOAD_END')) {
+      const beginIdx = downloadBuffer.indexOf('DOWNLOAD_BEGIN');
+      const endIdx = downloadBuffer.indexOf('DOWNLOAD_END');
+      if (beginIdx >= 0 && endIdx > beginIdx) {
+        const content = downloadBuffer.substring(beginIdx + 'DOWNLOAD_BEGIN'.length, endIdx).trim();
+        const lines = content.split('\n');
+        const filename = lines[0];
+        const fileContent = lines.slice(1).join('\n');
+       
+        console.log(`\n[DOWNLOAD] File: ${filename}`);
+        console.log(`[DOWNLOAD] Size: ${Buffer.byteLength(fileContent, 'utf8')} bytes`);
+        console.log('[DOWNLOAD] Content:');
+        console.log('─'.repeat(60));
+        console.log(fileContent);
+        console.log('─'.repeat(60));
+      }
+      downloadBuffer = '';
+      isDownloading = false;
+      return;
+    }
+    return; // Continue buffering
+  }
 
-
+////////////////////
 
 
 

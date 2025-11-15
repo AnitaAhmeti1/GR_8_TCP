@@ -192,88 +192,88 @@ if (!requireAuthenticatedOrFail(state)) return;
   }
 }
 
-//
-// const server = net.createServer((socket) => {
-//   const remote = `${socket.remoteAddress}:${socket.remotePort}`;
 
-//   // Limit aktiv
-//   if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
-//     try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
-//     try { socket.end(); } catch {}
-//     console.log(`[${nowISO()}] Refused connection from ${remote} (server busy).`);
-//     return;
-//   }
+const server = net.createServer((socket) => {
+  const remote = `${socket.remoteAddress}:${socket.remotePort}`;
 
-//   // State inicial për klientin
-//   const state = {
-//     socket,
-//     remote,
-//     ip: socket.remoteAddress,
-//     port: socket.remotePort,
-//     username: null,
-//     authenticated: false,
-//     role: null,
-//     bytesReceived: 0,
-//     bytesSent: 0,
-//     messagesReceived: 0,
-//     lastActive: Date.now(),
-//     inactivityTimer: null,
-//     // upload state
-//     expectingUpload: false,
-//     uploadBuffer: '',
-//     uploadFilename: null
-//   };
-//   clients.set(socket, state);
+  // Limit aktiv
+  if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
+    try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
+    try { socket.end(); } catch {}
+    console.log(`[${nowISO()}] Refused connection from ${remote} (server busy).`);
+    return;
+  }
 
-//   console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
+  // State inicial për klientin
+  const state = {
+    socket,
+    remote,
+    ip: socket.remoteAddress,
+    port: socket.remotePort,
+    username: null,
+    authenticated: false,
+    role: null,
+    bytesReceived: 0,
+    bytesSent: 0,
+    messagesReceived: 0,
+    lastActive: Date.now(),
+    inactivityTimer: null,
+    // upload state
+    expectingUpload: false,
+    uploadBuffer: '',
+    uploadFilename: null
+  };
+  clients.set(socket, state);
 
-//   socket.setEncoding('utf8');
-//     function resetInactivity() {
-//     state.lastActive = Date.now();
-//     if (state.inactivityTimer) clearTimeout(state.inactivityTimer);
-//     state.inactivityTimer = setTimeout(() => {
-//       try { socket.write('NOTICE:INACTIVITY_CLOSING No activity detected. Connection closing.\n'); } catch {}
-//       console.log(`[${nowISO()}] Closing for inactivity: ${remote} (user=${state.username})`);
-//       cleanupSocket();
-//       try { socket.destroy(); } catch {}
-//     }, INACTIVITY_MS);
-//   }
-//   resetInactivity();
-// socket.on('data', (data) => {
-//     resetInactivity();
+  console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
 
-//     const len = Buffer.byteLength(data, 'utf8');
-//     state.bytesReceived += len;
-//     totalBytesReceived += len;
-//     state.messagesReceived += 1;
-//     state.lastActive = Date.now();
+  socket.setEncoding('utf8');
+    function resetInactivity() {
+    state.lastActive = Date.now();
+    if (state.inactivityTimer) clearTimeout(state.inactivityTimer);
+    state.inactivityTimer = setTimeout(() => {
+      try { socket.write('NOTICE:INACTIVITY_CLOSING No activity detected. Connection closing.\n'); } catch {}
+      console.log(`[${nowISO()}] Closing for inactivity: ${remote} (user=${state.username})`);
+      cleanupSocket();
+      try { socket.destroy(); } catch {}
+    }, INACTIVITY_MS);
+  }
+  resetInactivity();
+socket.on('data', (data) => {
+    resetInactivity();
+
+    const len = Buffer.byteLength(data, 'utf8');
+    state.bytesReceived += len;
+    totalBytesReceived += len;
+    state.messagesReceived += 1;
+    state.lastActive = Date.now();
   
-    // if (state.expectingUpload) {
-    //   state.uploadBuffer += data;
-    //   const beginIdx = state.uploadBuffer.indexOf('CONTENT_BEGIN');
-    //   const endIdx = state.uploadBuffer.indexOf('CONTENT_END');
-    //   if (beginIdx >= 0 && endIdx > beginIdx) {
-    //     const between = state.uploadBuffer.substring(beginIdx + 'CONTENT_BEGIN'.length, endIdx).trim();
-    //     try {
-    //       const safePath = safeJoin(FILES_DIR, state.uploadFilename);
-    //       fs.writeFileSync(safePath, between, 'utf8');
-    //       sendLine(socket, `UPLOAD_OK ${state.uploadFilename}`);
-    //       console.log(`[${nowISO()}] Uploaded ${state.uploadFilename} from ${state.username || state.remote}`);
-    //     } catch (e) {
-    //       sendLine(socket, `ERROR Upload failed: ${e.message}`);
-    //     }
-    //     // cleanup upload state
-    //     state.expectingUpload = false;
-    //     state.uploadBuffer = '';
-    //     state.uploadFilename = null;
-    //   }
-    //   return; 
-    // }
+    if (state.expectingUpload) {
+      state.uploadBuffer += data;
+      const beginIdx = state.uploadBuffer.indexOf('CONTENT_BEGIN');
+      const endIdx = state.uploadBuffer.indexOf('CONTENT_END');
+      if (beginIdx >= 0 && endIdx > beginIdx) {
+        const between = state.uploadBuffer.substring(beginIdx + 'CONTENT_BEGIN'.length, endIdx).trim();
+        try {
+          const safePath = safeJoin(FILES_DIR, state.uploadFilename);
+          fs.writeFileSync(safePath, between, 'utf8');
+          sendLine(socket, `UPLOAD_OK ${state.uploadFilename}`);
+          console.log(`[${nowISO()}] Uploaded ${state.uploadFilename} from ${state.username || state.remote}`);
+        } catch (e) {
+          sendLine(socket, `ERROR Upload failed: ${e.message}`);
+        }
+        // cleanup upload state
+        state.expectingUpload = false;
+        state.uploadBuffer = '';
+        state.uploadFilename = null;
+      }
+      return; 
+    }
 
     
-    // const lines = data.split(/\r?\n/).filter(Boolean);
-    // for (const raw of lines) {
-    //   const line = raw.trim();
+    const lines = data.split(/\r?\n/).filter(Boolean);
+    for (const raw of lines) {
+      const line = raw.trim();
 
 
 if (!state.authenticated) {
