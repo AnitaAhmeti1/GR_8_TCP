@@ -152,6 +152,28 @@ if (!requireAuthenticatedOrFail(state)) return;
         sendLine(socket, `DOWNLOAD_BEGIN\n${path.basename(safePath)}\n${content}\nDOWNLOAD_END`);
         break;
       }
+      case '/delete': {
+       
+        if (!requireAdminOrFail(state)) break;
+        const filename = parts[1];
+        if (!filename) { sendLine(socket, 'ERROR Usage: /delete <filename>'); break; }
+        const safePath = safeJoin(FILES_DIR, filename);
+        if (!fs.existsSync(safePath)) { sendLine(socket, 'ERROR File not found'); break; }
+        fs.unlinkSync(safePath);
+        sendLine(socket, `DELETE_OK ${filename}`);
+        console.log(`[${nowISO()}] ${state.username} deleted: ${filename}`);
+        break;
+      }
+      case '/search': {
+        
+        const keyword = parts.slice(1).join(' ');
+        if (!keyword) { sendLine(socket, 'ERROR Usage: /search <keyword>'); break; }
+        const found = [];
+        const items = fs.readdirSync(FILES_DIR);
+        for (const it of items) if (it.toLowerCase().includes(keyword.toLowerCase())) found.push(it);
+        sendLine(socket, `SEARCH_RESULTS ${found.length}\n${found.join('\n')}`);
+        break;
+      }
 
 //
 // const server = net.createServer((socket) => {
