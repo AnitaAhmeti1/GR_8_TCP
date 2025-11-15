@@ -275,7 +275,7 @@ if (!requireAuthenticatedOrFail(state)) return;
     // for (const raw of lines) {
     //   const line = raw.trim();
 
-    
+
 if (!state.authenticated) {
   if (line.startsWith('AUTH ')) {
     const parts = line.split(' ');
@@ -322,4 +322,14 @@ if (!state.authenticated) {
     sendLine(socket, 'ERROR Not authenticated. Please authenticate with: AUTH <username> <password>');
     continue;
   }
+}
+
+if (line === 'STATS') {
+  sendLine(socket, prettyStats());
+} else if (line.startsWith('/')) {
+  handleCommand(state, line);
+} else {
+  const msg = `[${nowISO()}] ${state.username || state.remote}: ${line}\n`;
+  fs.appendFile(path.join(__dirname, 'messages.log'), msg, () => {});
+  sendLine(socket, `ECHO ${line}`);
 }
