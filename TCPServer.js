@@ -375,6 +375,29 @@ rl.on('line', (line) => {
   }
 });
 
+setInterval(() => {
+  const out = {
+    timestamp: nowISO(),
+    active_connections: activeConnectionsCount(),
+    ips: listActiveIPs(),
+    total_bytes_received: totalBytesReceived,
+    total_bytes_sent: totalBytesSent,
+    per_client: []
+  };
+  for (const st of clients.values()) {
+    out.per_client.push({
+      username: st.username,
+      ip: st.ip,
+      role: st.role,
+      messages_received: st.messagesReceived,
+      bytes_received: st.bytesReceived,
+      bytes_sent: st.bytesSent,
+      last_active: new Date(st.lastActive).toISOString()
+    });
+  }
+  fs.writeFile(STATS_LOG_FILE, JSON.stringify(out, null, 2), () => {});
+}, 10_000);
+
 function showHelp() {
   console.log('\n' + '─'.repeat(60));
   console.log('KOMANDAT E DISPONUESHME:');
