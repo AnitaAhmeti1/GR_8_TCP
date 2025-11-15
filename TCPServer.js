@@ -97,7 +97,7 @@ function requireAuthenticatedOrFail(state) {
   return true;
 }
 
-<<<<<<< HEAD
+
 function handleCommand(state, line) {
   const socket = state.socket;
   const parts = line.split(' ').filter(Boolean);
@@ -127,7 +127,32 @@ if (!requireAuthenticatedOrFail(state)) return;
         sendLine(socket, `FILE_CONTENT_BEGIN\n${path.basename(safePath)}\n${content}\nFILE_CONTENT_END`);
         break;
       }
-=======
+
+      case '/upload': {
+      
+        if (!requireAdminOrFail(state)) break;
+        const filename = parts[1];
+        if (!filename) { sendLine(socket, 'ERROR Usage: /upload <filename> (then send CONTENT_BEGIN ... CONTENT_END)'); break; }
+        if (state.expectingUpload) { sendLine(socket, 'ERROR Already expecting an upload.'); break; }
+        state.expectingUpload = true;
+        state.uploadBuffer = '';
+        state.uploadFilename = filename;
+        sendLine(socket, 'READY_FOR_UPLOAD Send CONTENT_BEGIN then file content then CONTENT_END on separate lines.');
+        break;
+      }
+      case '/download': {
+     
+        const filename = parts[1];
+        if (!filename) { sendLine(socket, 'ERROR Usage: /download <filename>'); break; }
+        const safePath = safeJoin(FILES_DIR, filename);
+        if (!fs.existsSync(safePath)) { sendLine(socket, 'ERROR File not found'); break; }
+        const stat = fs.statSync(safePath);
+        if (stat.isDirectory()) { sendLine(socket, 'ERROR Cannot download directory'); break; }
+        const content = fs.readFileSync(safePath, 'utf8');
+        sendLine(socket, `DOWNLOAD_BEGIN\n${path.basename(safePath)}\n${content}\nDOWNLOAD_END`);
+        break;
+      }
+
 //
 // const server = net.createServer((socket) => {
 //   const remote = `${socket.remoteAddress}:${socket.remotePort}`;
