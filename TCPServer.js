@@ -333,3 +333,29 @@ if (line === 'STATS') {
   fs.appendFile(path.join(__dirname, 'messages.log'), msg, () => {});
   sendLine(socket, `ECHO ${line}`);
 }
+
+function showHelp() {
+  console.log('\n' + '─'.repeat(60));
+  console.log('KOMANDAT E DISPONUESHME:');
+  console.log('─'.repeat(60));
+  console.log('\n📂 FILE MANAGEMENT:');
+  console.log('  /list [dir]              - Lista e file-ave në server');
+  console.log('  /read <filename>         - Lexo përmbajtjen e file-it');
+  console.log('  /download <filename>     - Shkarko file (display content)');
+  console.log('  /search <keyword>        - Kërko file sipas emrit');
+  console.log('  /info <filename>         - Info për file-in');
+  console.log('\n🔐 ADMIN ONLY:');
+  console.log('  /upload <filename>       - Upload file (pastaj CONTENT_BEGIN...END)');
+  console.log('  /delete <filename>       - Fshi file nga serveri');
+  console.log('\n📊 OTHER:');
+  console.log('  STATS                    - Statistika të serverit');
+  console.log('  <text>                   - Dërgo mesazh të zakonshëm (echo)');
+  console.log('\n🛠️  LOCAL HELPER:');
+  console.log('  /local sendfile <path> [remotename]  - Upload automatik të file-it lokal');
+  console.log('\n💡 EXAMPLES:');
+  console.log('  /list');
+  console.log('  /read test.txt');
+  console.log('  /local sendfile ./document.txt mydoc.txt');
+  console.log('  /search report');
+  console.log('─'.repeat(60) + '\n');
+}
