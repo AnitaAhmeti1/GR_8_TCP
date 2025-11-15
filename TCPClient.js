@@ -164,4 +164,16 @@ function parseArgs(argv) {
       rl.prompt();
       return;
     }
+
+    if (!fs.existsSync(localPath)) {
+      console.log(`❌ Local file not found: ${localPath}`);
+      rl.prompt();
+      return;
+    }
+   
+    if (!remoteName) {
+      console.log('❌ Remote filename required');
+      rl.prompt();
+      return;
+    }
    
