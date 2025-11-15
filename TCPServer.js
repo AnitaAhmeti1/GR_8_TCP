@@ -174,6 +174,23 @@ if (!requireAuthenticatedOrFail(state)) return;
         sendLine(socket, `SEARCH_RESULTS ${found.length}\n${found.join('\n')}`);
         break;
       }
+         case '/info': {
+        const filename = parts[1];
+        if (!filename) { sendLine(socket, 'ERROR Usage: /info <filename>'); break; }
+        const safePath = safeJoin(FILES_DIR, filename);
+        if (!fs.existsSync(safePath)) { sendLine(socket, 'ERROR File not found'); break; }
+        const st = fs.statSync(safePath);
+        const type = st.isDirectory() ? 'directory' : 'file';
+        sendLine(socket, `INFO\nname: ${filename}\ntype: ${type}\nsize: ${st.size} bytes\ncreated: ${st.birthtime.toISOString()}\nmodified: ${st.mtime.toISOString()}`);
+        break;
+      }
+      default:
+        sendLine(socket, 'ERROR Unknown command. Available: /list /read /download /search /info /upload /delete');
+    }
+  } catch (err) {
+    sendLine(socket, 'ERROR ' + err.message);
+  }
+}
 
 //
 // const server = net.createServer((socket) => {
