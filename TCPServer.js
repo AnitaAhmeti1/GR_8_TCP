@@ -97,6 +97,7 @@ function requireAuthenticatedOrFail(state) {
   return true;
 }
 
+<<<<<<< HEAD
 function handleCommand(state, line) {
   const socket = state.socket;
   const parts = line.split(' ').filter(Boolean);
@@ -116,3 +117,63 @@ if (!requireAuthenticatedOrFail(state)) return;
         break;
       }
       case '/read': 
+       const filename = parts[1];
+        if (!filename) { sendLine(socket, 'ERROR Usage: /read <filename>'); break; }
+        const safePath = safeJoin(FILES_DIR, filename);
+        if (!fs.existsSync(safePath)) { sendLine(socket, 'ERROR File not found'); break; }
+        const stat = fs.statSync(safePath);
+        if (stat.isDirectory()) { sendLine(socket, 'ERROR Cannot read directory. Use /list'); break; }
+        const content = fs.readFileSync(safePath, 'utf8');
+        sendLine(socket, `FILE_CONTENT_BEGIN\n${path.basename(safePath)}\n${content}\nFILE_CONTENT_END`);
+        break;
+      }
+=======
+//
+// const server = net.createServer((socket) => {
+//   const remote = `${socket.remoteAddress}:${socket.remotePort}`;
+
+//   // Limit aktiv
+//   if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
+//     try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
+//     try { socket.end(); } catch {}
+//     console.log(`[${nowISO()}] Refused connection from ${remote} (server busy).`);
+//     return;
+//   }
+
+//   // State inicial për klientin
+//   const state = {
+//     socket,
+//     remote,
+//     ip: socket.remoteAddress,
+//     port: socket.remotePort,
+//     username: null,
+//     authenticated: false,
+//     role: null,
+//     bytesReceived: 0,
+//     bytesSent: 0,
+//     messagesReceived: 0,
+//     lastActive: Date.now(),
+//     inactivityTimer: null,
+//     // upload state
+//     expectingUpload: false,
+//     uploadBuffer: '',
+//     uploadFilename: null
+//   };
+//   clients.set(socket, state);
+
+//   console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
+
+//   socket.setEncoding('utf8');
+//     function resetInactivity() {
+//     state.lastActive = Date.now();
+//     if (state.inactivityTimer) clearTimeout(state.inactivityTimer);
+//     state.inactivityTimer = setTimeout(() => {
+//       try { socket.write('NOTICE:INACTIVITY_CLOSING No activity detected. Connection closing.\n'); } catch {}
+//       console.log(`[${nowISO()}] Closing for inactivity: ${remote} (user=${state.username})`);
+//       cleanupSocket();
+//       try { socket.destroy(); } catch {}
+//     }, INACTIVITY_MS);
+//   }
+//   resetInactivity();
+
+>>>>>>> 35cf110c8eb6d1dcb757bfe6f2fb31479d1c58a1
