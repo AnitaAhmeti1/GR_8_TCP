@@ -398,6 +398,18 @@ setInterval(() => {
   fs.writeFile(STATS_LOG_FILE, JSON.stringify(out, null, 2), () => {});
 }, 10_000);
 
+server.listen(PORT, HOST, () => {
+  console.log(`[${nowISO()}] Server listening on ${HOST}:${PORT}`);
+  console.log(`Files directory: ${FILES_DIR}`);
+  console.log(`Max active connections: ${MAX_ACTIVE_CONNECTIONS}`);
+  console.log(`Inactivity timeout: ${INACTIVITY_MS / 1000}s`);
+  console.log(`\nUsers configured:`);
+  for (const [username, info] of Object.entries(USERS)) {
+    console.log(`  - ${username} (${info.role})`);
+  }
+  console.log(`\nType STATS to view statistics, EXIT to shutdown.\n`);
+});
+
 function showHelp() {
   console.log('\n' + '─'.repeat(60));
   console.log('KOMANDAT E DISPONUESHME:');
