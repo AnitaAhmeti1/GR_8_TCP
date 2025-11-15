@@ -334,6 +334,34 @@ if (line === 'STATS') {
   sendLine(socket, `ECHO ${line}`);
 }
 
+  socket.on('close', () => {
+    console.log(`[${nowISO()}] Connection closed: ${remote} (user=${state.username})`);
+    cleanupSocket();
+  });
+
+  socket.on('error', (err) => {
+    console.log(`[${nowISO()}] Socket error from ${remote}: ${err.message}`);
+    cleanupSocket();
+  });
+
+  function cleanupSocket() {
+    if (state.inactivityTimer) clearTimeout(state.inactivityTimer);
+    clients.delete(socket);
+    state.expectingUpload = false;
+    state.uploadBuffer = '';
+    state.uploadFilename = null;
+    if (state.username) {
+      clientsByName[state.username] = {
+        username: state.username,
+        bytesReceived: state.bytesReceived,
+        bytesSent: state.bytesSent,
+        messagesReceived: state.messagesReceived,
+        disconnectedAt: Date.now()
+      };
+    }
+  }
+});
+
 function showHelp() {
   console.log('\n' + '─'.repeat(60));
   console.log('KOMANDAT E DISPONUESHME:');
