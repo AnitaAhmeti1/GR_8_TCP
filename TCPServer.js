@@ -78,3 +78,21 @@ function sendLine(socket, text) {
     totalBytesSent += n;
   }
 }
+
+
+
+function requireAdminOrFail(state) {
+  if (state.role !== 'admin') {
+    sendLine(state.socket, 'ERROR Permission denied. Admin required.');
+    return false;
+  }
+  return true;
+}
+
+function requireAuthenticatedOrFail(state) {
+  if (!state.authenticated) {
+    sendLine(state.socket, 'ERROR Not authenticated.');
+    return false;
+  }
+  return true;
+}
