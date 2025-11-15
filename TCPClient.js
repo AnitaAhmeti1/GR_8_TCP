@@ -63,6 +63,23 @@ if (data.includes('FILE_CONTENT_BEGIN') && data.includes('FILE_CONTENT_END')) {
   // Normal server messages
   process.stdout.write(`[SERVER] ${data}`);
 });
+
+socket.on('close', () => {
+  console.log('\n✗ Disconnected from server.');
+  process.exit(0);
+});
+
+socket.on('error', (err) => {
+  console.error(`\n✗ Socket error: ${err.message}`);
+  process.exit(1);
+});
+
+// Helper për upload interaktiv përmes string-ut
+function sendUploadContentFromString(content) {
+  socket.write('CONTENT_BEGIN\n');
+  socket.write(content + '\n');
+  socket.write('CONTENT_END\n');
+}
 ////////////////////
 
 
