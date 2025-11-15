@@ -176,4 +176,24 @@ function parseArgs(argv) {
       rl.prompt();
       return;
     }
+
+     try {
+      const content = fs.readFileSync(localPath, 'utf8');
+      const size = Buffer.byteLength(content, 'utf8');
+      console.log(`📤 Uploading: ${localPath} → ${remoteName} (${size} bytes)`);
+     
+      socket.write(`/upload ${remoteName}\n`);
+     
+
+      setTimeout(() => {
+        sendUploadContentFromString(content);
+        console.log('✓ Upload sent');
+      }, 300);
+     
+    } catch (err) {
+      console.log(`❌ Error reading file: ${err.message}`);
+    }
    
+    rl.prompt();
+    return;
+  }
