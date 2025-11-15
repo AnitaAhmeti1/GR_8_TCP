@@ -197,3 +197,12 @@ function parseArgs(argv) {
     rl.prompt();
     return;
   }
+  socket.write(trimmed + '\n');
+  rl.prompt();
+});
+
+rl.on('close', () => {
+  console.log('\nGoodbye!');
+  socket.end();
+  process.exit(0);
+});
