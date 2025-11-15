@@ -16,6 +16,38 @@ function parseArgs(argv) {
   return out;
 }
 
+const args = parseArgs(process.argv);
+const HOST = args.host || '127.0.0.1';
+const PORT = parseInt(args.port || '9000', 10);
+const USER = args.user || null;
+const PASS = args.pass || null;
+
+console.log('='.repeat(60));
+console.log('TCP CLIENT - Rrjetat Kompjuterike');
+console.log('='.repeat(60));
+console.log(`Connecting to: ${HOST}:${PORT}`);
+console.log('='.repeat(60));
+
+const socket = net.createConnection({ host: HOST, port: PORT }, () => {
+  console.log(`✓ Connected to ${HOST}:${PORT}`);
+  if (USER && PASS) {
+    console.log(`→ Authenticating as: ${USER}`);
+    socket.write(`AUTH ${USER} ${PASS}\n`);
+  } else {
+    console.log('\nℹ Nuk u dhanë kredenciale në start. Mund të autentikohesh me:');
+    console.log('  AUTH <username> <password>');
+    console.log('\nShembuj:');
+    console.log('  AUTH admin adminpass');
+    console.log('  AUTH user1 user1pass');
+  }
+  showHelp();
+});
+
+socket.setEncoding('utf8');
+
+let downloadBuffer = '';
+let isDownloading = false;
+
 ////////////////
 socket.on('data', (data) => {
   // Handle download protocol
