@@ -230,7 +230,7 @@ if (!requireAuthenticatedOrFail(state)) return;
 //     totalBytesReceived += len;
 //     state.messagesReceived += 1;
 //     state.lastActive = Date.now();
-    // Nëse po presim upload, mblidh bufferin dhe kontrollo marker-at
+  
     // if (state.expectingUpload) {
     //   state.uploadBuffer += data;
     //   const beginIdx = state.uploadBuffer.indexOf('CONTENT_BEGIN');
@@ -250,10 +250,10 @@ if (!requireAuthenticatedOrFail(state)) return;
     //     state.uploadBuffer = '';
     //     state.uploadFilename = null;
     //   }
-    //   return; // mos e trajto si komanda të tjera derisa përfundon upload
+    //   return; 
     // }
 
-    // // Line-based protocol për pjesën tjetër
+    
     // const lines = data.split(/\r?\n/).filter(Boolean);
     // for (const raw of lines) {
     //   const line = raw.trim();
