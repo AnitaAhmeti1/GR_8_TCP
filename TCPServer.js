@@ -230,5 +230,32 @@ if (!requireAuthenticatedOrFail(state)) return;
 //     totalBytesReceived += len;
 //     state.messagesReceived += 1;
 //     state.lastActive = Date.now();
+    // Nëse po presim upload, mblidh bufferin dhe kontrollo marker-at
+    // if (state.expectingUpload) {
+    //   state.uploadBuffer += data;
+    //   const beginIdx = state.uploadBuffer.indexOf('CONTENT_BEGIN');
+    //   const endIdx = state.uploadBuffer.indexOf('CONTENT_END');
+    //   if (beginIdx >= 0 && endIdx > beginIdx) {
+    //     const between = state.uploadBuffer.substring(beginIdx + 'CONTENT_BEGIN'.length, endIdx).trim();
+    //     try {
+    //       const safePath = safeJoin(FILES_DIR, state.uploadFilename);
+    //       fs.writeFileSync(safePath, between, 'utf8');
+    //       sendLine(socket, `UPLOAD_OK ${state.uploadFilename}`);
+    //       console.log(`[${nowISO()}] Uploaded ${state.uploadFilename} from ${state.username || state.remote}`);
+    //     } catch (e) {
+    //       sendLine(socket, `ERROR Upload failed: ${e.message}`);
+    //     }
+    //     // cleanup upload state
+    //     state.expectingUpload = false;
+    //     state.uploadBuffer = '';
+    //     state.uploadFilename = null;
+    //   }
+    //   return; // mos e trajto si komanda të tjera derisa përfundon upload
+    // }
+
+    // // Line-based protocol për pjesën tjetër
+    // const lines = data.split(/\r?\n/).filter(Boolean);
+    // for (const raw of lines) {
+    //   const line = raw.trim();
 
 
