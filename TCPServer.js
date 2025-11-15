@@ -1,4 +1,3 @@
-
 const net = require('net');
 const fs = require('fs');
 const path = require('path');
@@ -7,8 +6,8 @@ const readline = require('readline');
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = parseInt(process.env.PORT || '9000', 10);
 
-const MAX_ACTIVE_CONNECTIONS = 6;        
-const INACTIVITY_MS = 2 * 60 * 1000;       
+const MAX_ACTIVE_CONNECTIONS = 6;
+const INACTIVITY_MS = 2 * 60 * 1000;
 const STATS_LOG_FILE = path.join(__dirname, 'server_stats.txt');
 const FILES_DIR = path.join(__dirname, 'server_files');
 
@@ -21,8 +20,8 @@ const USERS = {
   user3: { password: 'user3pass', role: 'read' }
 };
 
-const clients = new Map();   
-const clientsByName = {};     
+const clients = new Map(); 
+const clientsByName = {}; 
 let totalBytesReceived = 0;
 let totalBytesSent = 0;
 
@@ -79,8 +78,6 @@ function sendLine(socket, text) {
   }
 }
 
-
-
 function requireAdminOrFail(state) {
   if (state.role !== 'admin') {
     sendLine(state.socket, 'ERROR Permission denied. Admin required.');
@@ -97,27 +94,25 @@ function requireAuthenticatedOrFail(state) {
   return true;
 }
 
-
 function handleCommand(state, line) {
   const socket = state.socket;
   const parts = line.split(' ').filter(Boolean);
   const cmd = (parts[0] || '').toLowerCase();
-   
-  
-if (!requireAuthenticatedOrFail(state)) return;
+
+  if (!requireAuthenticatedOrFail(state)) return;
 
   try {
     switch (cmd) {
       case '/list': {
-          const dir = parts.length > 1 ? parts.slice(1).join(' ') : '.';
+        const dir = parts.length > 1 ? parts.slice(1).join(' ') : '.';
         const safeDir = safeJoin(FILES_DIR, dir);
         const items = fs.readdirSync(safeDir, { withFileTypes: true })
           .map(d => (d.isDirectory() ? `[DIR] ${d.name}` : d.name));
         sendLine(socket, `LIST ${safeDir}:\n${items.join('\n')}`);
         break;
       }
-      case '/read': 
-       const filename = parts[1];
+      case '/read': {
+        const filename = parts[1];
         if (!filename) { sendLine(socket, 'ERROR Usage: /read <filename>'); break; }
         const safePath = safeJoin(FILES_DIR, filename);
         if (!fs.existsSync(safePath)) { sendLine(socket, 'ERROR File not found'); break; }
@@ -127,9 +122,7 @@ if (!requireAuthenticatedOrFail(state)) return;
         sendLine(socket, `FILE_CONTENT_BEGIN\n${path.basename(safePath)}\n${content}\nFILE_CONTENT_END`);
         break;
       }
-
       case '/upload': {
-      
         if (!requireAdminOrFail(state)) break;
         const filename = parts[1];
         if (!filename) { sendLine(socket, 'ERROR Usage: /upload <filename> (then send CONTENT_BEGIN ... CONTENT_END)'); break; }
@@ -141,7 +134,6 @@ if (!requireAuthenticatedOrFail(state)) return;
         break;
       }
       case '/download': {
-     
         const filename = parts[1];
         if (!filename) { sendLine(socket, 'ERROR Usage: /download <filename>'); break; }
         const safePath = safeJoin(FILES_DIR, filename);
@@ -153,7 +145,6 @@ if (!requireAuthenticatedOrFail(state)) return;
         break;
       }
       case '/delete': {
-       
         if (!requireAdminOrFail(state)) break;
         const filename = parts[1];
         if (!filename) { sendLine(socket, 'ERROR Usage: /delete <filename>'); break; }
@@ -165,7 +156,6 @@ if (!requireAuthenticatedOrFail(state)) return;
         break;
       }
       case '/search': {
-        
         const keyword = parts.slice(1).join(' ');
         if (!keyword) { sendLine(socket, 'ERROR Usage: /search <keyword>'); break; }
         const found = [];
@@ -174,7 +164,7 @@ if (!requireAuthenticatedOrFail(state)) return;
         sendLine(socket, `SEARCH_RESULTS ${found.length}\n${found.join('\n')}`);
         break;
       }
-         case '/info': {
+      case '/info': {
         const filename = parts[1];
         if (!filename) { sendLine(socket, 'ERROR Usage: /info <filename>'); break; }
         const safePath = safeJoin(FILES_DIR, filename);
@@ -192,11 +182,9 @@ if (!requireAuthenticatedOrFail(state)) return;
   }
 }
 
-
 const server = net.createServer((socket) => {
   const remote = `${socket.remoteAddress}:${socket.remotePort}`;
 
-  // Limit aktiv
   if (activeConnectionsCount() >= MAX_ACTIVE_CONNECTIONS) {
     try { socket.write('ERROR:SERVER_BUSY Too many connections. Try later.\n'); } catch {}
     try { socket.end(); } catch {}
@@ -204,7 +192,6 @@ const server = net.createServer((socket) => {
     return;
   }
 
-  // State inicial për klientin
   const state = {
     socket,
     remote,
@@ -218,7 +205,6 @@ const server = net.createServer((socket) => {
     messagesReceived: 0,
     lastActive: Date.now(),
     inactivityTimer: null,
-    // upload state
     expectingUpload: false,
     uploadBuffer: '',
     uploadFilename: null
@@ -228,7 +214,8 @@ const server = net.createServer((socket) => {
   console.log(`[${nowISO()}] Connection from ${remote}. Active: ${activeConnectionsCount()}`);
 
   socket.setEncoding('utf8');
-    function resetInactivity() {
+
+  function resetInactivity() {
     state.lastActive = Date.now();
     if (state.inactivityTimer) clearTimeout(state.inactivityTimer);
     state.inactivityTimer = setTimeout(() => {
@@ -239,7 +226,8 @@ const server = net.createServer((socket) => {
     }, INACTIVITY_MS);
   }
   resetInactivity();
-socket.on('data', (data) => {
+
+  socket.on('data', (data) => {
     resetInactivity();
 
     const len = Buffer.byteLength(data, 'utf8');
@@ -247,7 +235,7 @@ socket.on('data', (data) => {
     totalBytesReceived += len;
     state.messagesReceived += 1;
     state.lastActive = Date.now();
-  
+
     if (state.expectingUpload) {
       state.uploadBuffer += data;
       const beginIdx = state.uploadBuffer.indexOf('CONTENT_BEGIN');
@@ -262,77 +250,76 @@ socket.on('data', (data) => {
         } catch (e) {
           sendLine(socket, `ERROR Upload failed: ${e.message}`);
         }
-        // cleanup upload state
         state.expectingUpload = false;
         state.uploadBuffer = '';
         state.uploadFilename = null;
       }
-      return; 
+      return;
     }
 
-    
     const lines = data.split(/\r?\n/).filter(Boolean);
     for (const raw of lines) {
       const line = raw.trim();
 
+      if (!state.authenticated) {
+        if (line.startsWith('AUTH ')) {
+          const parts = line.split(' ');
+          if (parts.length >= 3) {
+            const username = parts[1];
+            const password = parts.slice(2).join(' ');
+            const user = USERS[username];
+            if (user && user.password === password) {
+              state.username = username;
+              state.authenticated = true;
+              state.role = user.role;
 
-if (!state.authenticated) {
-  if (line.startsWith('AUTH ')) {
-    const parts = line.split(' ');
-    if (parts.length >= 3) {
-      const username = parts[1];
-      const password = parts.slice(2).join(' ');
-      const user = USERS[username];
-      if (user && user.password === password) {
-        state.username = username;
-        state.authenticated = true;
-        state.role = user.role;
+              if (clientsByName[username]) {
+                state.bytesReceived += (clientsByName[username].bytesReceived || 0);
+                state.bytesSent += (clientsByName[username].bytesSent || 0);
+                state.messagesReceived += (clientsByName[username].messagesReceived || 0);
+              }
 
-        if (clientsByName[username]) {
-          state.bytesReceived += (clientsByName[username].bytesReceived || 0);
-          state.bytesSent += (clientsByName[username].bytesSent || 0);
-          state.messagesReceived += (clientsByName[username].messagesReceived || 0);
+              if (state.role === 'admin') {
+                try { socket.setNoDelay(true); } catch {}
+                console.log(`[${nowISO()}] Admin ${username} - TCP_NODELAY enabled for lower latency`);
+              }
+
+              clientsByName[username] = {
+                username,
+                bytesReceived: state.bytesReceived,
+                bytesSent: state.bytesSent,
+                messagesReceived: state.messagesReceived,
+                lastSeen: Date.now()
+              };
+
+              sendLine(socket, `AUTH_OK Welcome ${username}. Role=${state.role}`);
+              console.log(`[${nowISO()}] Authenticated ${username} (${state.role}) from ${state.remote}`);
+              continue;
+            } else {
+              sendLine(socket, 'AUTH_FAIL Invalid credentials.');
+              continue;
+            }
+          } else {
+            sendLine(socket, 'AUTH_FAIL Usage: AUTH <username> <password>');
+            continue;
+          }
+        } else {
+          sendLine(socket, 'ERROR Not authenticated. Please authenticate with: AUTH <username> <password>');
+          continue;
         }
-
-        if (state.role === 'admin') {
-          try { socket.setNoDelay(true); } catch {}
-          console.log(`[${nowISO()}] Admin ${username} - TCP_NODELAY enabled for lower latency`);
-        }
-
-        clientsByName[username] = {
-          username,
-          bytesReceived: state.bytesReceived,
-          bytesSent: state.bytesSent,
-          messagesReceived: state.messagesReceived,
-          lastSeen: Date.now()
-        };
-
-        sendLine(socket, `AUTH_OK Welcome ${username}. Role=${state.role}`);
-        console.log(`[${nowISO()}] Authenticated ${username} (${state.role}) from ${state.remote}`);
-        continue;
-      } else {
-        sendLine(socket, 'AUTH_FAIL Invalid credentials.');
-        continue;
       }
-    } else {
-      sendLine(socket, 'AUTH_FAIL Usage: AUTH <username> <password>');
-      continue;
-    }
-  } else {
-    sendLine(socket, 'ERROR Not authenticated. Please authenticate with: AUTH <username> <password>');
-    continue;
-  }
-}
 
-if (line === 'STATS') {
-  sendLine(socket, prettyStats());
-} else if (line.startsWith('/')) {
-  handleCommand(state, line);
-} else {
-  const msg = `[${nowISO()}] ${state.username || state.remote}: ${line}\n`;
-  fs.appendFile(path.join(__dirname, 'messages.log'), msg, () => {});
-  sendLine(socket, `ECHO ${line}`);
-}
+      if (line === 'STATS') {
+        sendLine(socket, prettyStats());
+      } else if (line.startsWith('/')) {
+        handleCommand(state, line);
+      } else {
+        const msg = `[${nowISO()}] ${state.username || state.remote}: ${line}\n`;
+        fs.appendFile(path.join(__dirname, 'messages.log'), msg, () => {});
+        sendLine(socket, `ECHO ${line}`);
+      }
+    }
+  });
 
   socket.on('close', () => {
     console.log(`[${nowISO()}] Connection closed: ${remote} (user=${state.username})`);
@@ -408,61 +395,4 @@ server.listen(PORT, HOST, () => {
     console.log(`  - ${username} (${info.role})`);
   }
   console.log(`\nType STATS to view statistics, EXIT to shutdown.\n`);
-});
-
-function showHelp() {
-  console.log('\n' + '─'.repeat(60));
-  console.log('KOMANDAT E DISPONUESHME:');
-  console.log('─'.repeat(60));
-  console.log('\n📂 FILE MANAGEMENT:');
-  console.log('  /list [dir]              - Lista e file-ave në server');
-  console.log('  /read <filename>         - Lexo përmbajtjen e file-it');
-  console.log('  /download <filename>     - Shkarko file (display content)');
-  console.log('  /search <keyword>        - Kërko file sipas emrit');
-  console.log('  /info <filename>         - Info për file-in');
-  console.log('\n🔐 ADMIN ONLY:');
-  console.log('  /upload <filename>       - Upload file (pastaj CONTENT_BEGIN...END)');
-  console.log('  /delete <filename>       - Fshi file nga serveri');
-  console.log('\n📊 OTHER:');
-  console.log('  STATS                    - Statistika të serverit');
-  console.log('  <text>                   - Dërgo mesazh të zakonshëm (echo)');
-  console.log('\n🛠️  LOCAL HELPER:');
-  console.log('  /local sendfile <path> [remotename]  - Upload automatik të file-it lokal');
-  console.log('\n💡 EXAMPLES:');
-  console.log('  /list');
-  console.log('  /read test.txt');
-  console.log('  /local sendfile ./document.txt mydoc.txt');
-  console.log('  /search report');
-  console.log('─'.repeat(60) + '\n');
-}
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  prompt: '> '
-});
-
-rl.prompt();
-
-rl.on('line', (line) => {
-  const trimmed = (line || '').trim();
- 
-  if (!trimmed) {
-    rl.prompt();
-    return;
-  }
-
-  // Help command
-  if (trimmed.toLowerCase() === 'help' || trimmed === '?') {
-    showHelp();
-    rl.prompt();
-    return;
-  }
-
-  // Exit command
-  if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
-    console.log('Goodbye!');
-    socket.end();
-    process.exit(0);
-  }
 });
