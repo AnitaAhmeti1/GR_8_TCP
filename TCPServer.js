@@ -275,52 +275,51 @@ if (!requireAuthenticatedOrFail(state)) return;
     // for (const raw of lines) {
     //   const line = raw.trim();
 
-          if (!state.authenticated) {
-        if (line.startsWith('AUTH ')) {
-          const parts = line.split(' ');
-          if (parts.length >= 3) {
-            const username = parts[1];
-            const password = parts.slice(2).join(' ');
-            const user = USERS[username];
-            if (user && user.password === password) {
-              state.username = username;
-              state.authenticated = true;
-              state.role = user.role;
+    
+if (!state.authenticated) {
+  if (line.startsWith('AUTH ')) {
+    const parts = line.split(' ');
+    if (parts.length >= 3) {
+      const username = parts[1];
+      const password = parts.slice(2).join(' ');
+      const user = USERS[username];
+      if (user && user.password === password) {
+        state.username = username;
+        state.authenticated = true;
+        state.role = user.role;
 
-              if (clientsByName[username]) {
-                state.bytesReceived += (clientsByName[username].bytesReceived || 0);
-                state.bytesSent += (clientsByName[username].bytesSent || 0);
-                state.messagesReceived += (clientsByName[username].messagesReceived || 0);
-              }
-
-              if (state.role === 'admin') {
-                try { socket.setNoDelay(true); } catch {}
-                console.log(`[${nowISO()}] Admin ${username} - TCP_NODELAY enabled for lower latency`);
-              }
-
-              clientsByName[username] = {
-                username,
-                bytesReceived: state.bytesReceived,
-                bytesSent: state.bytesSent,
-                messagesReceived: state.messagesReceived,
-                lastSeen: Date.now()
-              };
-
-              sendLine(socket, `AUTH_OK Welcome ${username}. Role=${state.role}`);
-              console.log(`[${nowISO()}] Authenticated ${username} (${state.role}) from ${state.remote}`);
-              continue;
-            } else {
-              sendLine(socket, 'AUTH_FAIL Invalid credentials.');
-              continue;
-            }
-          } else {
-            sendLine(socket, 'AUTH_FAIL Usage: AUTH <username> <password>');
-            continue;
-          }
-        } else {
-          sendLine(socket, 'ERROR Not authenticated. Please authenticate with: AUTH <username> <password>');
-          continue;
+        if (clientsByName[username]) {
+          state.bytesReceived += (clientsByName[username].bytesReceived || 0);
+          state.bytesSent += (clientsByName[username].bytesSent || 0);
+          state.messagesReceived += (clientsByName[username].messagesReceived || 0);
         }
+
+        if (state.role === 'admin') {
+          try { socket.setNoDelay(true); } catch {}
+          console.log(`[${nowISO()}] Admin ${username} - TCP_NODELAY enabled for lower latency`);
+        }
+
+        clientsByName[username] = {
+          username,
+          bytesReceived: state.bytesReceived,
+          bytesSent: state.bytesSent,
+          messagesReceived: state.messagesReceived,
+          lastSeen: Date.now()
+        };
+
+        sendLine(socket, `AUTH_OK Welcome ${username}. Role=${state.role}`);
+        console.log(`[${nowISO()}] Authenticated ${username} (${state.role}) from ${state.remote}`);
+        continue;
+      } else {
+        sendLine(socket, 'AUTH_FAIL Invalid credentials.');
+        continue;
       }
-
-
+    } else {
+      sendLine(socket, 'AUTH_FAIL Usage: AUTH <username> <password>');
+      continue;
+    }
+  } else {
+    sendLine(socket, 'ERROR Not authenticated. Please authenticate with: AUTH <username> <password>');
+    continue;
+  }
+}
