@@ -359,3 +359,34 @@ function showHelp() {
   console.log('  /search report');
   console.log('─'.repeat(60) + '\n');
 }
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: '> '
+});
+
+rl.prompt();
+
+rl.on('line', (line) => {
+  const trimmed = (line || '').trim();
+ 
+  if (!trimmed) {
+    rl.prompt();
+    return;
+  }
+
+  // Help command
+  if (trimmed.toLowerCase() === 'help' || trimmed === '?') {
+    showHelp();
+    rl.prompt();
+    return;
+  }
+
+  // Exit command
+  if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
+    console.log('Goodbye!');
+    socket.end();
+    process.exit(0);
+  }
+});
