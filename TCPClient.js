@@ -45,7 +45,24 @@ socket.on('data', (data) => {
     }
     return; // Continue buffering
   }
+if (data.includes('FILE_CONTENT_BEGIN') && data.includes('FILE_CONTENT_END')) {
+    const beginIdx = data.indexOf('FILE_CONTENT_BEGIN');
+    const endIdx = data.indexOf('FILE_CONTENT_END');
+    const content = data.substring(beginIdx + 'FILE_CONTENT_BEGIN'.length, endIdx).trim();
+    const lines = content.split('\n');
+    const filename = lines[0];
+    const fileContent = lines.slice(1).join('\n');
+   
+    console.log(`\n[FILE] ${filename}`);
+    console.log('─'.repeat(60));
+    console.log(fileContent);
+    console.log('─'.repeat(60));
+    return;
+  }
 
+  // Normal server messages
+  process.stdout.write(`[SERVER] ${data}`);
+});
 ////////////////////
 
 
