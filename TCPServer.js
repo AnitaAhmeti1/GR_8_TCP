@@ -96,3 +96,23 @@ function requireAuthenticatedOrFail(state) {
   }
   return true;
 }
+
+function handleCommand(state, line) {
+  const socket = state.socket;
+  const parts = line.split(' ').filter(Boolean);
+  const cmd = (parts[0] || '').toLowerCase();
+   
+  
+if (!requireAuthenticatedOrFail(state)) return;
+
+  try {
+    switch (cmd) {
+      case '/list': {
+          const dir = parts.length > 1 ? parts.slice(1).join(' ') : '.';
+        const safeDir = safeJoin(FILES_DIR, dir);
+        const items = fs.readdirSync(safeDir, { withFileTypes: true })
+          .map(d => (d.isDirectory() ? `[DIR] ${d.name}` : d.name));
+        sendLine(socket, `LIST ${safeDir}:\n${items.join('\n')}`);
+        break;
+      }
+      case '/read': 
