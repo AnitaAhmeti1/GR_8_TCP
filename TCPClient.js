@@ -95,12 +95,12 @@ socket.on('data', (data) => {
 });
 
 socket.on('close', () => {
-  console.log('\n✗ Disconnected from server.');
+  console.log('\n Disconnected from server.');
   process.exit(0);
 });
 
 socket.on('error', (err) => {
-  console.error(`\n✗ Socket error: ${err.message}`);
+  console.error(`\n Socket error: ${err.message}`);
   process.exit(1);
 });
 
@@ -114,21 +114,21 @@ function showHelp() {
   console.log('\n' + '─'.repeat(60));
   console.log('KOMANDAT E DISPONUESHME:');
   console.log('─'.repeat(60));
-  console.log('\n📂 FILE MANAGEMENT:');
+  console.log('\n FILE MANAGEMENT:');
   console.log('  /list [dir]              - Lista e file-ave në server');
   console.log('  /read <filename>         - Lexo përmbajtjen e file-it');
   console.log('  /download <filename>     - Shkarko file (display content)');
   console.log('  /search <keyword>        - Kërko file sipas emrit');
   console.log('  /info <filename>         - Info për file-in');
-  console.log('\n🔐 ADMIN ONLY:');
+  console.log('\n ADMIN ONLY:');
   console.log('  /upload <filename>       - Upload file (pastaj CONTENT_BEGIN...END)');
   console.log('  /delete <filename>       - Fshi file nga serveri');
-  console.log('\n📊 OTHER:');
+  console.log('\n OTHER:');
   console.log('  STATS                    - Statistika të serverit');
   console.log('  <text>                   - Dërgo mesazh të zakonshëm (echo)');
-  console.log('\n🛠️  LOCAL HELPER:');
+  console.log('\n LOCAL HELPER:');
   console.log('  /local sendfile <path> [remotename]  - Upload automatik të file-it lokal');
-  console.log('\n💡 EXAMPLES:');
+  console.log('\n EXAMPLES:');
   console.log('  /list');
   console.log('  /read test.txt');
   console.log('  /local sendfile ./document.txt mydoc.txt');
@@ -170,19 +170,19 @@ rl.on('line', (line) => {
     const remoteName = parts[3] || (localPath ? path.basename(localPath) : null);
    
     if (!localPath) {
-      console.log('❌ Usage: /local sendfile <localpath> [remotefilename]');
+      console.log(' Usage: /local sendfile <localpath> [remotefilename]');
       rl.prompt();
       return;
     }
    
     if (!fs.existsSync(localPath)) {
-      console.log(`❌ Local file not found: ${localPath}`);
+      console.log(` Local file not found: ${localPath}`);
       rl.prompt();
       return;
     }
    
     if (!remoteName) {
-      console.log('❌ Remote filename required');
+      console.log(' Remote filename required');
       rl.prompt();
       return;
     }
@@ -190,7 +190,7 @@ rl.on('line', (line) => {
     try {
       const content = fs.readFileSync(localPath, 'utf8');
       const size = Buffer.byteLength(content, 'utf8');
-      console.log(`📤 Uploading: ${localPath} → ${remoteName} (${size} bytes)`);
+      console.log(` Uploading: ${localPath} → ${remoteName} (${size} bytes)`);
      
       socket.write(`/upload ${remoteName}\n`);
      
@@ -200,7 +200,7 @@ rl.on('line', (line) => {
       }, 300);
      
     } catch (err) {
-      console.log(`❌ Error reading file: ${err.message}`);
+      console.log(` Error reading file: ${err.message}`);
     }
    
     rl.prompt();
